@@ -5,11 +5,20 @@ const chalk = require('chalk')
 const fs = require('fs')
 const { join } = require('path')
 const fileName = join(__dirname, `auth_info.json`)
+const config = require('./config.json')
 
 const Client = new WAConnection()
 Client.loadAuthInfo(fileName)
-await Client.connect()
+Client.connect({ timeoutMs: 30 * 1000 })
 
+const cooldowns = new Map()
+Client.commandCache = new Map();
+
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    Client.commandCache.set(command.name, command);
+}
 
 Client.on("qr", () => {
     console.log(`Qr ready, scan`)
@@ -25,15 +34,17 @@ Client.on('open', () => {
 
     const authInfo = Client.base64EncodedAuthInfo()
     fs.writeFileSync(fileName, JSON.stringify(authInfo, null, '\t'))
+    // Client.sendMessage(config.groupId, 'Wuhu das ist die gruppen id i guess lol', MessageType.text)
+
+    async () => {
+        setInterval(async function () { await checkAssignment() }, 1000 * 60 * 30);
+        let now = new Date()
+        console.log(now.getHours(), ':', (now.getMinutes() + '').padStart(2, "0"))
+    }
 })
 
 Client.on('close', () => { console.log("Connection closed") })
 
-Client.connect({ timeoutMs: 30 * 1000 }).then(async c => {
-    //Tenshi Test id 4915204376731-1627232355@g
-    const id = "4915204376731-1627232355@g"
-    const sentMsg = await conn.sendMessage(id, 'oh hello there', MessageType.text)
-})
 
 Client.on('chat-update', async (ctx) => {
     if (!ctx.hasNewMessage) return
@@ -44,15 +55,66 @@ Client.on('chat-update', async (ctx) => {
 
     const from = ctx.key.remoteJid
     console.log('Message from: ', from)
-    const body = ctx.message.conversation || ctx.message[type].caption || ctx.message[type].text || ""
+    const type = Object.keys(lin.message)[0]
+    const msg = lin.message.conversation || lin.message[type].caption || lin.message[type].text || ""
+    msg.from = from
+    if (!msg.startsWith("+")) return
 
-    console.log(body)
+    const args = msg.slice(1).trim().split(/ +/);
+    const commandName = args.shift().toLowerCase();
+    let command = Client.commandCache.get(commandName)
 
-    if (!body.startsWith("+")) {
-        console.log('no cmd')
-    } else {
-        console.log(' cmd')
+    if (!command) return
+    if (command.cooldown) {
+        let oldTime = cooldowns.get(from) + (command.cooldown * 1000) || (new Date()).getTime()
+        let newtime = (new Date()).getTime()
+        cooldowns.set(from, newtime)
+        if ((newtime - oldTime) < 0) return Client.sendMessage(from, `Coolwdown \n ${(newtime - oldTime) / 1000 * (-1)} s`, MessageType.text)
     }
+    if (!args && command.args) return Client.sendMessage(from, 'dieser Command benötigt min. ein Argument', MessageType.text)
 
+    if (command.permission == 'OWNER' && !ctx.key.fromMe) return Client.sendMessage(from, 'Dir fehlen leider Berechtigungen um dies zu tun', MessageType.text)
+    console.warn(`${from} used: ${commandName}`)
 
+    if (ctx.key.fromMe && commandName == 'reload') return reloadModules(from)
+
+    try {
+        await command.execute(Client, msg, args).then(e => {
+            Client.close()
+        })
+    } catch (e) {
+        console.log(e)
+        return Client.sendMessage(from, 'Fehler aufgetreten qwq\n' + e, MessageType.text)
+    }
 })
+
+async function checkAssignment() {
+    let A = await checkCourse()
+    console.log('Checked Assigment')
+    if (!A.includes('>')) A = undefined
+    if (!A) return
+    Client.sendMessage(config.groupId, A, MessageType.text)
+}
+
+
+// Reload Comamnd Files
+const reloadModules = async function (from) {
+    var root = join(__dirname, "commands");
+    console.log("Reload Modules");
+    const commandDirectorys = fs.readdirSync(root).filter(file => file.endsWith('.js'));
+    let module_count = 0
+
+    for (let file of commandDirectorys) {
+        let path = join(root, file);
+        try {
+            delete require.cache[require.resolve(path)];
+            const newCommand = require(path);
+            Client.commandCache.set(newCommand.name, newCommand);
+            module_count++;
+        } catch (error) {
+            console.error(error);
+            Client.sendMessage(from, `Beim neuladen von ${file} ist ein Fehler aufgetreten:\n${error.message}`, MessageType.text)
+        }
+    }
+    Client.sendMessage(from, "Es wurden " + module_count + " Module neu geladen uwu", MessageType.text)
+}
