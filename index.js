@@ -56,7 +56,7 @@ Client.on('chat-update', async (ctx) => {
     // console.log('Message from: ', from)
     console.log(ctx)
     const type = Object.keys(ctx.message)[0]
-    const msg = lin.message.conversation || lin.message[type].caption || lin.message[type].text || ""
+    const msg = ctx.message.conversation || ctx.message[type].caption || ctx.message[type].text || ""
     msg.from = from
     if (!msg.startsWith("+")) return
 
