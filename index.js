@@ -1,4 +1,3 @@
-
 const { MessageType } = require('@adiwajshing/baileys')
 const { WAConnection } = require("@adiwajshing/baileys")
 const chalk = require('chalk')
@@ -63,6 +62,8 @@ Client.on('chat-update', async (ctx) => {
     const args = msg.slice(1).trim().split(/ +/);
     const commandName = args.shift().toLowerCase();
     let command = Client.commandCache.get(commandName)
+    let admin = false
+    if (ctx.key.fromMe || config.admins.includes(ctx.participant)) admin = true
 
     if (!command) return
     if (command.cooldown) {
@@ -73,14 +74,14 @@ Client.on('chat-update', async (ctx) => {
     }
     if (!args && command.args) return Client.sendMessage(from, 'dieser Command benötigt min. ein Argument', MessageType.text)
 
-    if (command.permission == 'OWNER' && !ctx.key.fromMe) return Client.sendMessage(from, 'Dir fehlen leider Berechtigungen um dies zu tun', MessageType.text)
+    if (command.permission == 'OWNER' && admin) return Client.sendMessage(from, 'Dir fehlen leider Berechtigungen um dies zu tun', MessageType.text)
     console.warn(`${from} used: ${commandName}`)
 
-    if (ctx.key.fromMe && commandName == 'reload') return reloadModules(from)
+    if (admin && commandName == 'reload') return reloadModules(from)
 
     try {
-        await command.execute(Client, msg, args).then(e => {
-            Client.close()
+        await command.execute(Client, msg, args, from).then(e => {
+            //  Client.close()
         })
     } catch (e) {
         console.log(e)
@@ -95,7 +96,6 @@ async function checkAssignment() {
     if (!A) return
     Client.sendMessage(config.groupId, A, MessageType.text)
 }
-
 
 // Reload Comamnd Files
 const reloadModules = async function (from) {
