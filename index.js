@@ -45,7 +45,6 @@ Client.on('open', () => {
 
 Client.on('close', () => { console.log("Connection closed") })
 
-
 Client.on('chat-update', async (ctx) => {
     if (!ctx.hasNewMessage) return
     if (!ctx.messages) return
@@ -54,8 +53,9 @@ Client.on('chat-update', async (ctx) => {
     if (!ctx.message) return
 
     const from = ctx.key.remoteJid
-    console.log('Message from: ', from)
-    const type = Object.keys(lin.message)[0]
+    // console.log('Message from: ', from)
+    console.log(ctx)
+    const type = Object.keys(ctx.message)[0]
     const msg = lin.message.conversation || lin.message[type].caption || lin.message[type].text || ""
     msg.from = from
     if (!msg.startsWith("+")) return
