@@ -7,7 +7,7 @@ module.exports = {
     args: false,
     syntax: 'mealtomorrow',
     description: 'Essseeeeeeeeen morgeeeeen',
-    async execute(Client, msg, args) {
+    async execute(Client, msg, args, from) {
         let date = new Date()
         date.setDate(date.getDate() + 1)
         let day = date.getDate()
@@ -25,6 +25,6 @@ module.exports = {
             let arr = m.name.split(';')
             mealList.push(`${arr[0]} \n`)
         }
-        return Client.sendMessage(msg.from, `Essen ${serachedDate} \n\`• ` + mealList.join('\n• ') + '\`', MessageType.text)
+        return Client.sendMessage(from, `Essen ${serachedDate}\n• ` + mealList.join('\n• '), MessageType.text)
     },
 }

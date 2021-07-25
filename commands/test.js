@@ -6,7 +6,7 @@ module.exports = {
     syntax: 'test',
     description: 'Teste nichts',
     cooldown: 10,
-    async execute(Client, msg, args) {
-        return Client.sendMessage(msg.from, 'Heeeeeeeeeeeeeeeelp', MessageType.text)
+    async execute(Client, msg, args, from) {
+        return Client.sendMessage(from, 'Heeeeeeeeeeeeeeeelp', MessageType.text)
     },
 }

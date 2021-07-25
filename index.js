@@ -53,7 +53,7 @@ Client.on('chat-update', async (ctx) => {
 
     const from = ctx.key.remoteJid
     // console.log('Message from: ', from)
-    console.log(ctx)
+    //   console.log(ctx)
     const type = Object.keys(ctx.message)[0]
     const msg = ctx.message.conversation || ctx.message[type].caption || ctx.message[type].text || ""
     msg.from = from
@@ -63,7 +63,10 @@ Client.on('chat-update', async (ctx) => {
     const commandName = args.shift().toLowerCase();
     let command = Client.commandCache.get(commandName)
     let admin = false
-    if (ctx.key.fromMe || config.admins.includes(ctx.participant)) admin = true
+
+    const sender = ctx.key.fromMe ? Client.user.jid : isGroup ? ctx.participant : ctx.key.remoteJid
+    const senderNumber = sender.split("@")[0]
+    if (config.admins.includes(senderNumber)) admin = true // || config.admins.includes(ctx.participant)
 
     if (!command) return
     if (command.cooldown) {
@@ -80,9 +83,7 @@ Client.on('chat-update', async (ctx) => {
     if (admin && commandName == 'reload') return reloadModules(from)
 
     try {
-        await command.execute(Client, msg, args, from).then(e => {
-            //  Client.close()
-        })
+        await command.execute(Client, msg, args, from)
     } catch (e) {
         console.log(e)
         return Client.sendMessage(from, 'Fehler aufgetreten qwq\n' + e, MessageType.text)

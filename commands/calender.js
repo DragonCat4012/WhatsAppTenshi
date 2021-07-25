@@ -7,7 +7,7 @@ module.exports = {
     syntax: 'calender',
     description: 'Zu erledigende Abgaben',
 
-    async execute(Client, msg, args) {
+    async execute(Client, msg, args, from) {
         let start = (new Date()).getTime()
         let lastCalender = await getCalender();
         lastCalender = lastCalender
@@ -22,6 +22,6 @@ module.exports = {
         }
 
         let ende = (new Date()).getTime()
-        return Client.sendMessage(msg.from, text + `\n${ende - start}ms`, MessageType.text)
+        return Client.sendMessage(from, text + `\n${ende - start}ms`, MessageType.text)
     },
 }

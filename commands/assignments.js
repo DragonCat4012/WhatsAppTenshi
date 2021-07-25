@@ -7,10 +7,10 @@ module.exports = {
     syntax: 'assignments',
     permission: 'OWNER',
     description: 'Zeigt die neusten Änderungen der Kurse',
-    async execute(Client, msg, args) {
+    async execute(Client, msg, args, from) {
         let newChanges = await checkCourse()
         if (!newChanges.includes('>')) newChanges = undefined
 
-        return Client.sendMessage(msg.from, newChanges ?? 'Nichts neues', MessageType.text)
+        return Client.sendMessage(from, newChanges ?? 'Nichts neues', MessageType.text)
     },
 }
