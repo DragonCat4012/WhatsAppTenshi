@@ -77,7 +77,7 @@ Client.on('chat-update', async (ctx) => {
     }
     if (!args && command.args) return Client.sendMessage(from, 'dieser Command benötigt min. ein Argument', MessageType.text)
 
-    if (command.permission == 'OWNER' && admin) return Client.sendMessage(from, 'Dir fehlen leider Berechtigungen um dies zu tun', MessageType.text)
+    if (command.permission == 'OWNER' && !admin) return Client.sendMessage(from, 'Dir fehlen leider Berechtigungen um dies zu tun', MessageType.text)
     console.warn(`${from} used: ${commandName}`)
 
     if (admin && commandName == 'reload') return reloadModules(from)
