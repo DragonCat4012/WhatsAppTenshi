@@ -27,7 +27,7 @@ async function checkCourse() {
 
         var courseData = await getCoursesRaw(courseID)
         var courseInfo = courseData.find(c => c.id == courseID)
-        console.log('> Course Change found: ', courseInfo.shortname)
+        // console.log('> Course Change found: ', courseInfo.shortname)
 
         //Saving new Changes
         changesArray.push({ id: courseID, data: fetchedCourseModules })
@@ -92,12 +92,6 @@ async function checkCourse() {
     }
     //    if (text == 'Neue Änderung \n') text = undefined
     return text
-}
-function arrayEquals(a, b) {
-    return Array.isArray(a) &&
-        Array.isArray(b) &&
-        a.length === b.length &&
-        a.every((val, index) => val === b[index]);
 }
 
 module.exports = { checkCourse }
