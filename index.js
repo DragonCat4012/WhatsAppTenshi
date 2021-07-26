@@ -52,8 +52,6 @@ Client.on('chat-update', async (ctx) => {
     if (!ctx.message) return
 
     const from = ctx.key.remoteJid
-    // console.log('Message from: ', from)
-    //   console.log(ctx)
     const type = Object.keys(ctx.message)[0]
     const msg = ctx.message.conversation || ctx.message[type].caption || ctx.message[type].text || ""
     msg.from = from
@@ -62,25 +60,26 @@ Client.on('chat-update', async (ctx) => {
     const args = msg.slice(1).trim().split(/ +/);
     const commandName = args.shift().toLowerCase();
     let command = Client.commandCache.get(commandName)
-    let admin = false
 
     const sender = ctx.key.fromMe ? Client.user.jid : isGroup ? ctx.participant : ctx.key.remoteJid
     const senderNumber = sender.split("@")[0]
-    if (config.admins.includes(senderNumber)) admin = true // || config.admins.includes(ctx.participant)
 
+    let admin = false
+    if (config.admins.includes(senderNumber)) admin = true
     if (!command) return
+
     if (command.cooldown) {
         let oldTime = cooldowns.get(from) + (command.cooldown * 1000) || (new Date()).getTime()
         let newtime = (new Date()).getTime()
         cooldowns.set(from, newtime)
         if ((newtime - oldTime) < 0) return Client.sendMessage(from, `Coolwdown \n ${(newtime - oldTime) / 1000 * (-1)} s`, MessageType.text)
     }
+
     if (!args && command.args) return Client.sendMessage(from, 'dieser Command benötigt min. ein Argument', MessageType.text)
-
     if (command.permission == 'OWNER' && !admin) return Client.sendMessage(from, 'Dir fehlen leider Berechtigungen um dies zu tun', MessageType.text)
-    console.warn(`${from} used: ${commandName}`)
-
     if (admin && commandName == 'reload') return reloadModules(from)
+
+    console.warn(`${senderNumber} used: ${commandName}`)
 
     try {
         await command.execute(Client, msg, args, from)
