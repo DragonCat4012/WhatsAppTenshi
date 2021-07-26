@@ -10,7 +10,7 @@ const Client = new WAConnection()
 Client.loadAuthInfo(fileName)
 Client.connect({ timeoutMs: 30 * 1000 })
 
-const cooldowns = new Map()
+const cooldowns = new Map();
 Client.commandCache = new Map();
 
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -23,23 +23,20 @@ Client.on("qr", () => {
     console.log(`Qr ready, scan`)
 })
 
-Client.on('open', () => {
-    console.log(chalk.keyword("aqua")("[ STATS ]"), chalk.whiteBright("WA Version : " + Client.user.phone.wa_version))
-    console.log(chalk.keyword("aqua")("[ STATS ]"), chalk.whiteBright("OS Version : " + Client.user.phone.os_version))
-    console.log(chalk.keyword("aqua")("[ STATS ]"), chalk.whiteBright("Device : " + Client.user.phone.device_manufacturer))
-    console.log(chalk.keyword("aqua")("[ STATS ]"), chalk.whiteBright("Model : " + Client.user.phone.device_model))
-    console.log(chalk.keyword("aqua")("[ STATS ]"), chalk.whiteBright("OS Build Number : " + Client.user.phone.os_build_number))
+Client.on('open', async () => {
+    let now = new Date()
+    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("WA Version : ".padStart(17, " ") + Client.user.phone.wa_version))
+    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("OS Version : ".padStart(17, " ") + Client.user.phone.os_version))
+    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("Device : ".padStart(17, " ") + Client.user.phone.device_manufacturer))
+    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("Model : ".padStart(17, " ") + Client.user.phone.device_model))
+    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("OS Build Number : " + Client.user.phone.os_build_number))
+    console.log(chalk.keyword("aqua")("[ STATS ]"), chalk.whiteBright(now.getHours(), ':', (now.getMinutes() + '').padStart(2, "0")))
     console.log(chalk.keyword("aqua")("[ STATS ]"), chalk.whiteBright('Welcome My Senpai'))
 
     const authInfo = Client.base64EncodedAuthInfo()
     fs.writeFileSync(fileName, JSON.stringify(authInfo, null, '\t'))
     // Client.sendMessage(config.groupId, 'Wuhu das ist die gruppen id i guess lol', MessageType.text)
-
-    async () => {
-        setInterval(async function () { await checkAssignment() }, 1000 * 60 * 30);
-        let now = new Date()
-        console.log(now.getHours(), ':', (now.getMinutes() + '').padStart(2, "0"))
-    }
+    setInterval(async function () { await checkAssignment() }, 1000 * 60 * 30);
 })
 
 Client.on('close', () => { console.log("Connection closed") })
