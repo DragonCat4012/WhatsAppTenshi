@@ -2,9 +2,9 @@ const { getCalender } = require('../getCalender')
 const { MessageType } = require('@adiwajshing/baileys')
 
 module.exports = {
-    name: 'calender',
+    name: 'calendar',
     args: true,
-    syntax: 'calender',
+    syntax: 'calendar',
     description: 'Zu erledigende Abgaben',
 
     async execute(Client, msg, args, from) {
@@ -18,7 +18,7 @@ module.exports = {
         for (let assign of lastCalender) {
             let date = '♾';
             if (assign.dateTo !== 0) date = (new Date(assign.dateTo)).toLocaleString('de');
-            text += `\`${assign.nosubmissions == 1 ? 'X' : ' '}  ${assign.course}:\` ${assign.titel}  ${date}\n`
+            text += `${assign.nosubmissions == 1 ? 'X' : ' '} ${assign.course}: ${assign.titel} ${date}\n`
         }
 
         let ende = (new Date()).getTime()
