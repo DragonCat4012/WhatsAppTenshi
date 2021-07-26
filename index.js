@@ -5,8 +5,10 @@ const fs = require('fs')
 const { join } = require('path')
 const fileName = join(__dirname, `auth_info.json`)
 const config = require('./config.json')
+const { checkCourse } = require('./checkCourseChanges')
 
 const Client = new WAConnection()
+Client.logger.level = 'warn'
 Client.loadAuthInfo(fileName)
 Client.connect({ timeoutMs: 30 * 1000 })
 
@@ -19,27 +21,20 @@ for (const file of commandFiles) {
     Client.commandCache.set(command.name, command);
 }
 
-Client.on("qr", () => {
-    console.log(`Qr ready, scan`)
-})
-
 Client.on('open', async () => {
     let now = new Date()
-    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("WA Version : ".padStart(17, " ") + Client.user.phone.wa_version))
-    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("OS Version : ".padStart(17, " ") + Client.user.phone.os_version))
-    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("Device : ".padStart(17, " ") + Client.user.phone.device_manufacturer))
-    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("Model : ".padStart(17, " ") + Client.user.phone.device_model))
+    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("WA Version : ".padStart(18, " ") + Client.user.phone.wa_version))
+    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("OS Version : ".padStart(18, " ") + Client.user.phone.os_version))
+    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("Device : ".padStart(18, " ") + Client.user.phone.device_manufacturer))
+    console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("Model : ".padStart(18, " ") + Client.user.phone.device_model))
     console.log(chalk.keyword("pink")("[ STATS ]"), chalk.whiteBright("OS Build Number : " + Client.user.phone.os_build_number))
-    console.log(chalk.keyword("aqua")("[ STATS ]"), chalk.whiteBright(now.getHours(), ':', (now.getMinutes() + '').padStart(2, "0")))
-    console.log(chalk.keyword("aqua")("[ STATS ]"), chalk.whiteBright('Welcome My Senpai'))
+    console.log(chalk.keyword("aqua")("[ STATS ]"), chalk.whiteBright("Time : ".padStart(18, " ") + now.getHours(), ':', (now.getMinutes() + '').padStart(2, "0")))
 
     const authInfo = Client.base64EncodedAuthInfo()
     fs.writeFileSync(fileName, JSON.stringify(authInfo, null, '\t'))
-    // Client.sendMessage(config.groupId, 'Wuhu das ist die gruppen id i guess lol', MessageType.text)
+
     setInterval(async function () { await checkAssignment() }, 1000 * 60 * 30);
 })
-
-Client.on('close', () => { console.log("Connection closed") })
 
 Client.on('chat-update', async (ctx) => {
     if (!ctx.hasNewMessage) return
@@ -76,7 +71,7 @@ Client.on('chat-update', async (ctx) => {
     if (command.permission == 'OWNER' && !admin) return Client.sendMessage(from, 'Dir fehlen leider Berechtigungen um dies zu tun', MessageType.text)
     if (admin && commandName == 'reload') return reloadModules(from)
 
-    console.warn(`${senderNumber} used: ${commandName}`)
+    console.warn(`${senderNumber} (${from}) : ${commandName}`)
 
     try {
         await command.execute(Client, msg, args, from)
@@ -89,12 +84,11 @@ Client.on('chat-update', async (ctx) => {
 async function checkAssignment() {
     let A = await checkCourse()
     console.log('Checked Assigment')
-    if (!A.includes('>')) A = undefined
+    if (!A.includes('>')) return
     if (!A) return
-    Client.sendMessage(config.groupId, A, MessageType.text)
+    Client.sendMessage(config.groupId, A, MessageType.extendedText).catch()
 }
 
-// Reload Comamnd Files
 const reloadModules = async function (from) {
     var root = join(__dirname, "commands");
     console.log("Reload Modules");
