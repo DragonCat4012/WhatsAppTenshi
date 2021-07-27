@@ -84,9 +84,8 @@ Client.on('chat-update', async (ctx) => {
 async function checkAssignment() {
     let A = await checkCourse()
     console.log('Checked Assigment')
-    if (!A.includes('>')) return
-    if (!A) return
-    Client.sendMessage(config.groupId, A, MessageType.extendedText).catch()
+    if (!A.includes('>') || !A) return
+    Client.sendMessage(config.groupId, A, MessageType.extendedText)
 }
 
 const reloadModules = async function (from) {
