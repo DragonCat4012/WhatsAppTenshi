@@ -71,26 +71,25 @@ async function checkCourse() {
                 //check if module.content added
                 for (let content of newcontent) {
                     let contentAdd = oldContent.find(e => e.id == content.id)
-                    if (!contentAdd) text += `\t\t\t\t- Neuer Inhalt: ${content.name}\n`
+                    if (!contentAdd) text += `\t\t- Neuer Inhalt: ${content.name}\n`
                     if (!contentAdd) continue
 
                     //check Name Change
-                    if (content.name !== contentAdd.name) text += `\t\t\t\t- Modulname geändert von ${content.name} zu ${contentAdd.name}\n`
+                    if (content.name !== contentAdd.name) text += `\t\t- Modulname geändert von ${content.name} zu ${contentAdd.name}\n`
 
                     //check Content Size
                     if (!content.contents) continue
-                    if (content.contents.length !== contentAdd.contents.length) text += `\t\t\t\t- Modulanhänge bei ${content.name} geändert ${content.contents.length} => ${contentAdd.contents.length}\n`
+                    if (content.contents.length !== contentAdd.contents.length) text += `\t\t- Modulanhänge bei ${content.name} geändert ${content.contents.length} => ${contentAdd.contents.length}\n`
                 }
 
                 //check if module.content deleted
                 for (let content of oldContent) {
                     let contentRemoved = newcontent.find(e => e.id == content.id)
-                    if (!contentRemoved) text += `\t\t\t\t- Gelöschter Inhalt: ${content.name}\n`
+                    if (!contentRemoved) text += `\t\t- Gelöschter Inhalt: ${content.name}\n`
                 }
             }
         }
     }
-    //    if (text == 'Neue Änderung \n') text = undefined
     return text
 }
 
